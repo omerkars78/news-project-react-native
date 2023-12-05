@@ -1,7 +1,10 @@
-// src/middleware/authMiddleware.ts
 import { Response, NextFunction } from 'express';
-import { ExtendedRequest } from '../types/express';
-import jwt from 'jsonwebtoken';
+import { ExtendedRequest } from '../types/express'; 
+import jwt, { JwtPayload } from 'jsonwebtoken';
+
+interface TokenPayload extends JwtPayload {
+  isAdmin: number;
+}
 
 export const adminOnly = (req: ExtendedRequest, res: Response, next: NextFunction) => {
   const token = req.header('Authorization');
@@ -11,9 +14,9 @@ export const adminOnly = (req: ExtendedRequest, res: Response, next: NextFunctio
   }
 
   try {
-    const decodedToken = jwt.verify(token, 'gizliAnahtar');
+    const decodedToken = jwt.verify(token, 'gizliAnahtar') as TokenPayload;
 
-    if (decodedToken.isAdmin === 1) { // isAdmin özelliği sayı olarak tanımlandı
+    if (decodedToken.isAdmin === 1) {
       console.log("adminOnly: ", decodedToken);
       next();
     } else {
@@ -32,9 +35,9 @@ export const userOnly = (req: ExtendedRequest, res: Response, next: NextFunction
   }
 
   try {
-    const decodedToken = jwt.verify(token, 'gizliAnahtar');
+    const decodedToken = jwt.verify(token, 'key') as TokenPayload;
 
-    if (decodedToken.isAdmin === 0) { // isAdmin özelliği sayı olarak tanımlandı
+    if (decodedToken.isAdmin === 0) {
       console.log("userOnly: ", decodedToken);
       next();
     } else {
