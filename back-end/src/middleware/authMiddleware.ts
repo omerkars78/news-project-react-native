@@ -7,28 +7,8 @@ interface TokenPayload extends JwtPayload {
 }
 
 export const adminOnly = (req: ExtendedRequest, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization');
-
-  if (!token) {
-    return res.status(401).json({ message: "Authorization token is missing" });
-  }
-
-  try {
-    const decodedToken = jwt.verify(token, 'gizliAnahtar') as TokenPayload;
-
-    if (decodedToken.isAdmin === 1) {
-      console.log("adminOnly: ", decodedToken);
-      next();
-    } else {
-      res.status(403).json({ message: "You must be admin" });
-    }
-  } catch (error) {
-    res.status(401).json({ message: "Invalid token" });
-  }
-};
-
-export const userOnly = (req: ExtendedRequest, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization');
+  const header = req.header('Authorization');
+  const token = header && header.split(' ')[1];
 
   if (!token) {
     return res.status(401).json({ message: "Authorization token is missing" });
@@ -36,14 +16,21 @@ export const userOnly = (req: ExtendedRequest, res: Response, next: NextFunction
 
   try {
     const decodedToken = jwt.verify(token, 'key') as TokenPayload;
+    console.log("Decoded Token: ", decodedToken);
 
-    if (decodedToken.isAdmin === 0) {
-      console.log("userOnly: ", decodedToken);
+    if (decodedToken.isAdmin == 1) {
+      console.log("adminOnly: ", decodedToken);
       next();
     } else {
-      res.status(403).json({ message: "You must be a normal user" });
+      res.status(403).json({ message: "You must be admin" });
     }
   } catch (error) {
+    console.error("Error in token verification: ", error);
     res.status(401).json({ message: "Invalid token" });
   }
 };
+
+
+
+
+
