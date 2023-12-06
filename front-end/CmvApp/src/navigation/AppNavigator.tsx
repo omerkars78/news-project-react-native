@@ -6,6 +6,10 @@ import RegisterScreen from '../screens/RegisterScreen';
 import NewsListScreen from '../screens/NewsListScreen';
 import AnnouncementListScreen from '../screens/AnnouncementListScreen';
 import ActivityFormScreen from '../screens/ActivityFormScreen';
+import AdminActivityListScreen from '../screens/AdminActivityListScreen';
+import AdminActivityUpdateScreen from '../screens/AdminActivityUpdateScreen';
+
+
 
 const Stack = createStackNavigator();
 
@@ -35,7 +39,17 @@ const AppNavigator = () => {
       <Stack.Screen 
         name="ActivityForm" 
         component={ActivityFormScreen} 
+        options={{ title: 'Aktivite Ekleme' }}
+      />
+       <Stack.Screen 
+        name="AdminActivities" 
+        component={AdminActivityListScreen} 
         options={{ title: 'Aktivite Yönetimi' }}
+      />
+       <Stack.Screen 
+        name="AdminActivityUpdate" 
+        component={AdminActivityUpdateScreen} 
+        options={{ title: 'Aktivite Güncelleme' }}
       />
     </Stack.Navigator>
   );

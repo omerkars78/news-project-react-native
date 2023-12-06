@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, Platform, Image } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { createActivity } from '../services/api';
+import { updateActivity, getActivityById } from '../services/api';
 
-interface ActivityFormScreenProps {
+interface AdminActivityUpdateScreenProps {
+  route: any;
   navigation: any;
 }
 
@@ -18,7 +19,7 @@ interface ActivityData {
   validityDate: string;
 }
 
-const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) => {
+const AdminActivityUpdateScreen: React.FC<AdminActivityUpdateScreenProps> = ({ route, navigation }) => {
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [topic, setTopic] = useState<string>('');
@@ -26,9 +27,35 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
   const [type, setType] = useState<boolean>(true);
   const [validityDate, setValidityDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [activityId, setActivityId] = useState<string>('');
+
+  useEffect(() => {
+    const { activityId } = route.params;
+    setActivityId(activityId);
+    // Aktiviteyi API'den al ve formu doldur
+    fetchActivity(activityId);
+  }, [route.params.activityId]);
+
+  const fetchActivity = async (id: number) => {
+    try {
+      const activity = await getActivityById(id);
+      if (activity) {
+        setTitle(activity.title);
+        setContent(activity.content);
+        setTopic(activity.topic);
+        setImage(activity.image);
+        setType(activity.type);
+        setValidityDate(new Date(activity.validityDate));
+      }
+    } catch (error) {
+      Alert.alert("Hata", "Aktivite yüklenirken bir hata oluştu");
+    }
+  };
+
   const toggleDatePicker = () => {
     setShowDatePicker(!showDatePicker);
   };
+
   const handleDateChange = (event: any, selectedDate: Date | undefined) => {
     const currentDate = selectedDate || validityDate;
     setShowDatePicker(Platform.OS === 'ios');
@@ -53,19 +80,16 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
       content,
       topic,
       image,
-      type: type ? true : false,
+      type,
       validityDate: validityDate.toISOString().split('T')[0]
     };
 
     try {
-      await createActivity(activityData);
-      console.log(activityData);
-      Alert.alert("Başarılı", "Aktivite başarıyla kaydedildi.");
+      await updateActivity(activityId, activityData);
+      Alert.alert("Başarılı", "Aktivite başarıyla güncellendi.");
       navigation.navigate('AdminActivities');
-      console.log(activityData);
     } catch (error) {
-      
-      Alert.alert("Hata", "Aktivite kaydedilemedi");
+      Alert.alert("Hata", "Aktivite güncellenirken bir hata oluştu");
     }
   };
 
@@ -99,7 +123,7 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
         style={pickerSelectStyles}
         placeholder={{ label: "Etkinlik Tipi Seçiniz...", value: null }}
       />
-<Button title="Resim Seç" onPress={selectImage} />
+      <Button title="Resim Seç" onPress={selectImage} />
       {image && (
         <View style={styles.imagePreviewContainer}>
           <Image source={{ uri: image }} style={styles.imagePreview} />
@@ -116,11 +140,10 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
         />
       )}
 
-      <Button title="Kaydet" onPress={handleSubmit} />
+      <Button title="Güncelle" onPress={handleSubmit} />
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -140,7 +163,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
-  }, imagePreviewContainer: {
+  },
+  imagePreviewContainer: {
     alignItems: 'center',
     marginVertical: 8,
   },
@@ -148,10 +172,6 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 10,
-  },
-  datePicker: {
-    width: '100%',
-    marginTop: 10,
   },
 });
 
@@ -178,4 +198,4 @@ const pickerSelectStyles = StyleSheet.create({
   },
 });
 
-export default ActivityFormScreen;
+export default AdminActivityUpdateScreen;

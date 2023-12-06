@@ -29,7 +29,7 @@ export function initActivity(sequelize: Sequelize): void {
       allowNull: false
     },
     image: {
-      type: new DataTypes.STRING(128),
+      type: new DataTypes.TEXT,
       allowNull: false
     },
     content: {
