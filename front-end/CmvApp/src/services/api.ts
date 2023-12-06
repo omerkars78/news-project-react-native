@@ -1,17 +1,18 @@
 // src/services/api.ts
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+
 
 // API'nin temel URL'si
-const BASE_URL = 'http://localhost:3000/api/';
+const BASE_URL = 'http://192.168.1.120:3000/api/';
 
 const api = axios.create({
   baseURL: BASE_URL,
 });
 
 // Kullanıcı kaydı için API isteği
-const register = async (username: string, password: string) => {
+const register = async (email: string, password: string) => {
   try {
-    const response = await api.post('auth/register', { username, password });
+    const response = await api.post('auth/register', { email, password });
     return response.data;
   } catch (error) {
     // Hata işleme
@@ -21,16 +22,27 @@ const register = async (username: string, password: string) => {
 };
 
 // Kullanıcı girişi için API isteği
-const login = async (username: string, password: string) => {
+const login = async (email: string, password: string) => {
   try {
-    const response = await api.post('auth/login', { username, password });
+    const response = await api.post('auth/login', { email, password });
     return response.data;
   } catch (error) {
-    // Hata işleme
-    console.error(error);
+    const axiosError = error as AxiosError;
+
+    if (axiosError.response) {
+      // Sunucunun döndürdüğü hata yanıtını logla
+      console.error('Error Response:', axiosError.response);
+    } else if (axiosError.request) {
+      // İstek yapıldı ancak yanıt alınamadı
+      console.error('Error Request:', axiosError.request);
+    } else {
+      // İstek yapılırken bir hata oluştu
+      console.error('Error Message:', axiosError.message);
+    }
     throw error;
   }
 };
+
 
 // Yeni aktivite oluşturma için API isteği
 const createActivity = async (activityData: any) => {

@@ -1,7 +1,8 @@
-// src/screens/ActivityFormScreen.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, Text, TextInput, Button, StyleSheet, Alert, Platform } from 'react-native';
+import RNPickerSelect from 'react-native-picker-select';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { createActivity } from '../services/api';
 
 interface ActivityFormScreenProps {
@@ -11,9 +12,31 @@ interface ActivityFormScreenProps {
 const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) => {
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
-  const [link, setLink] = useState<string>(''); // Haberler için
-  const [image, setImage] = useState<string>(''); // Duyurular için
-  const [type, setType] = useState<number>(1); // 1: Haber, 0: Duyuru
+  const [link, setLink] = useState<string>('');
+  const [image, setImage] = useState<string>('');
+  const [type, setType] = useState<number>(1);
+  const [validityDate, setValidityDate] = useState<Date | null>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+
+
+  const handleDateChange = (event: any, selectedDate: Date | undefined) => {
+    const currentDate = selectedDate || validityDate;
+    setShowDatePicker(Platform.OS === 'ios');
+    setValidityDate(currentDate);
+  };
+
+  const selectImage = () => {
+    launchImageLibrary({ mediaType: 'photo' }, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else if (response.assets && response.assets[0].uri) {
+        setImage(response.assets[0].uri);
+      }
+    });
+  };
+
 
   const handleSubmit = async () => {
     const activityData = {
@@ -34,14 +57,16 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
 
   return (
     <View style={styles.container}>
-      <Text>Activity Form</Text>
-      <Picker
-        selectedValue={type}
-        onValueChange={(itemValue) => setType(itemValue)}
-        style={styles.picker}>
-        <Picker.Item label="Haber" value={1} />
-        <Picker.Item label="Duyuru" value={0} />
-      </Picker>
+      <Text style={styles.title}>Activity Form</Text>
+      <RNPickerSelect
+        onValueChange={(value) => setType(value)}
+        items={[
+          { label: 'Haber', value: 1 },
+          { label: 'Duyuru', value: 0 },
+        ]}
+        style={pickerSelectStyles}
+        placeholder={{ label: "Seçiniz...", value: null }}
+      />
       <TextInput
         style={styles.input}
         placeholder="Başlık"
@@ -63,17 +88,25 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
         />
       )}
       {type === 0 && (
-        <TextInput
-          style={styles.input}
-          placeholder="Duyuru Resmi URL"
-          value={image}
-          onChangeText={setImage}
+        <>
+          <Button title="Resim Seç" onPress={selectImage} />
+          {image ? <Text>Seçilen Resim: {image}</Text> : null}
+        </>
+      )}
+ <Button title="Geçerlilik Tarihi Seç" onPress={() => setShowDatePicker(true)} />
+      {showDatePicker && (
+        <DateTimePicker
+          value={validityDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
         />
       )}
       <Button title="Kaydet" onPress={handleSubmit} />
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -82,16 +115,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'stretch',
   },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
   input: {
     padding: 10,
-    marginVertical: 10,
+    marginVertical: 8,
     borderWidth: 1,
     borderColor: 'gray',
+    borderRadius: 5,
   },
-  picker: {
-    height: 50,
+  datePicker: {
     width: '100%',
-    marginVertical: 10,
+    marginTop: 10,
+  },
+});
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 4,
+    color: 'black',
+    paddingRight: 30, // to ensure the text is never behind the icon
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: 'purple',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30, // to ensure the text is never behind the icon
   },
 });
 

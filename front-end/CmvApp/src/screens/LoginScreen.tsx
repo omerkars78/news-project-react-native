@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet,Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { login } from '../services/api';
 
 interface LoginScreenProps {
@@ -7,14 +7,19 @@ interface LoginScreenProps {
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const [username, setUsername] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
   const handleLogin = async () => {
     try {
-      const response = await login(username, password);
-      // Giriş başarılı, ana ekrana yönlendir
-      navigation.navigate('NewsList');
+      const response = await login(email, password);
+      console.log(response);
+      // Giriş başarılı, kullanıcının isAdmin durumuna göre yönlendir
+      if (response.user.isAdmin) {
+        navigation.navigate('ActivityForm');
+      } else {
+        navigation.navigate('NewsList');
+      }
     } catch (error) {
       Alert.alert("Hata", "Giriş başarısız");
     }
@@ -26,8 +31,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       <TextInput
         style={styles.input}
         placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
