@@ -3,7 +3,7 @@ import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // API'nin temel URL'si
-const BASE_URL = 'http://192.168.1.120:3000/api/';
+const BASE_URL = 'http://192.168.1.17:3000/api/';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -81,7 +81,13 @@ const login = async (email: string, password: string) => {
   }
 };
 
-
+const logout = async () => {
+  try {
+    await AsyncStorage.removeItem('userToken');
+  } catch (error) {
+    console.error('Logout sırasında hata oluştu', error);
+  }
+};
 
 // Yeni aktivite oluşturma için API isteği
 const createActivity = async (activityData: ActivityData) => {
@@ -103,13 +109,15 @@ const createActivity = async (activityData: ActivityData) => {
 
 const getActivityById = async (id: number) => {
   try {
-    const response = await api.get(`activities/activity/${id}`);
+    const response = await api.get(`activities/activities/${id}`);
     return response.data;
   } catch (error) {
     console.error(error);
     throw error;
   }
 };
+
+
 
 // Aktivite güncelleme için API isteği
 const updateActivity = async (id: string, activityData: ActivityData) => {
@@ -155,4 +163,4 @@ const getAllActivities = async () => {
   }
 };
 
-export { register, login, createActivity, updateActivity, deleteActivity, getAllActivities, getActivityById };
+export { register, login, createActivity, updateActivity, deleteActivity, getAllActivities, getActivityById, logout };

@@ -1,25 +1,36 @@
-// src/screens/AnnouncementListScreen.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
+import { getAllActivities } from '../services/api';
 import { connectSocket, disconnectSocket, socket } from '../services/socketService';
 
 interface AnnouncementItem {
-  id: string;
+  id: number;
   title: string;
   content: string;
   image: string;
-  type: number; // 1: Haber, 0: Duyuru
+  type: boolean; 
 }
 
 const AnnouncementListScreen: React.FC = () => {
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
 
   useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const activities = await getAllActivities();
+        // Type'a göre haberleri filtrele
+        const announcementData = activities.filter((activity:AnnouncementItem) => activity.type ===  false);
+        setAnnouncements(announcementData);
+      } catch (error) {
+        console.error('Haberler yüklenirken hata oluştu:', error);
+      }
+    };
+  
+    fetchActivities();
     connectSocket();
 
     socket.on('newActivity', (newData: AnnouncementItem) => {
-      // Yalnızca type değeri 0 olan verileri (duyuruları) listele
-      if (newData.type === 0) {
+      if (newData.type === false) {
         setAnnouncements((prevAnnouncements) => [...prevAnnouncements, newData]);
       }
     });
@@ -33,9 +44,12 @@ const AnnouncementListScreen: React.FC = () => {
     <View style={styles.container}>
       {announcements.map((item) => (
         <View key={item.id} style={styles.announcementItem}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text>{item.content}</Text>
-          {/* Resim ve diğer detaylar burada gösterilebilir */}
+          <Image source={{ uri: item.image }} style={styles.image} />
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text>{item.content}</Text>
+            {/* Resim ve diğer detaylar burada gösterilebilir */}
+          </View>
         </View>
       ))}
     </View>
@@ -48,11 +62,20 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   announcementItem: {
+    flexDirection: 'row',
     marginBottom: 15,
     padding: 10,
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 5,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginRight: 10,
+  },
+  textContainer: {
+    flex: 1,
   },
   title: {
     fontWeight: 'bold',

@@ -1,42 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { connectSocket, disconnectSocket, socket } from '../services/socketService';
+import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
+import { getAllActivities } from '../services/api';
 
 interface NewsItem {
-  id: string;
+  id: number;
   title: string;
-  content: string;
-  link: string;
-  type: boolean; 
+  image: string;
+  type: boolean; // Haberler için true
 }
 
 const NewsListScreen = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
 
   useEffect(() => {
-    connectSocket();
-
-    socket.on('newActivity', (newData: NewsItem) => {
-      // Yalnızca type değeri 1 olan verileri (haberleri) listele
-      if (newData.type === true) {
-        setNews((prevNews) => [...prevNews, newData]);
+    const fetchNews = async () => {
+      try {
+        const activities = await getAllActivities();
+        // Type'a göre haberleri filtrele
+        const newsData = activities.filter((activity: NewsItem) => activity.type === true);
+        setNews(newsData);
+      } catch (error) {
+        console.error('Haberler yüklenirken hata oluştu:', error);
       }
-    });
-
-    return () => {
-      disconnectSocket();
     };
+
+    fetchNews();
   }, []);
+
+  const renderItem = ({ item }: { item: NewsItem }) => (
+    <View style={styles.newsItem}>
+      <Image source={{ uri: item.image }} style={styles.image} />
+      <Text style={styles.title}>{item.title}</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      {news.map((item) => (
-        <View key={item.id} style={styles.newsItem}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text>{item.content}</Text>
-          {/* Link ve diğer detaylar burada gösterilebilir */}
-        </View>
-      ))}
+      <FlatList
+        data={news}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+      />
     </View>
   );
 };
@@ -47,14 +51,19 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   newsItem: {
-    marginBottom: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  image: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
   },
   title: {
-    fontWeight: 'bold',
+    fontSize: 18,
   },
 });
 

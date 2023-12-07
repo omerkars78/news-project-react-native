@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, Platform, Image, FlatList, TouchableOpacity } from 'react-native';
-import RNPickerSelect from 'react-native-picker-select';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { createActivity, getAllActivities, deleteActivity } from '../services/api';
+import React, { useState ,useEffect} from 'react';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { getAllActivities, deleteActivity } from '../services/api';
 
 interface Activity {
     id: number;
     topic: string;
+    title:string;
     
   }
   interface AdminActivityListScreenProps {
@@ -17,9 +16,26 @@ interface Activity {
   const AdminActivityListScreen: React.FC<AdminActivityListScreenProps> = ({ navigation }) => {
     const [activities, setActivities] = useState<Activity[]>([]);
   
-    useEffect(() => {
-      fetchActivities();
-    }, []);
+    useFocusEffect(
+      React.useCallback(() => {
+        const fetchActivities = async () => {
+          try {
+            const data = await getAllActivities();
+            console.log("API Response:", data);
+            setActivities(data);
+          } catch (error) {
+            console.error("API Request Error:", error);
+            Alert.alert("Hata", "Aktiviteler yüklenirken bir hata oluştu");
+          }
+        };
+  
+        fetchActivities();
+  
+        return () => {
+          
+        };
+      }, [])
+    );
   
     const fetchActivities = async () => {
       try {
@@ -49,11 +65,11 @@ interface Activity {
     const renderItem = ({ item }: { item: Activity }) => (
       <View style={styles.itemContainer}>
         <TouchableOpacity onPress={() => handleTopicPress(item.id)}>
-          <Text style={styles.title}>{item.topic}</Text>
+          <Text style={styles.title}>{item.title}</Text>
         </TouchableOpacity>
         <View style={styles.iconsContainer}>
           <TouchableOpacity onPress={() => handleTopicPress(item.id)}>
-            <Ionicons name="pencil-sharp" size={25} color="blue" />
+            <Ionicons name="pencil" size={25} color="blue" />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleDelete(item.id)}>
             <Ionicons name="trash" size={25} color="red" />

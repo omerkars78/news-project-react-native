@@ -2,6 +2,7 @@ import { Model, DataTypes, Sequelize } from 'sequelize';
 
 export class Activity extends Model {
   public id!: number;
+  public title!:string;
   public topic!: string;
   public content!: string;
   public validityDate!: Date;
@@ -23,6 +24,10 @@ export function initActivity(sequelize: Sequelize): void {
         model: 'users', 
         key: 'id'
       }
+    },
+    title: {
+      type: new DataTypes.STRING(128),
+      allowNull: false
     },
     topic: {
       type: new DataTypes.STRING(128),

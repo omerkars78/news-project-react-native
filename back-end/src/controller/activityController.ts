@@ -3,9 +3,10 @@ import { Activity } from '../models/Activity';
 
 export const createActivity = async (req: Request, res: Response) => {
   try {
-    const { topic, content, validityDate, userId, type, image } = req.body;
+    const { topic, content, validityDate, userId, type, image ,title} = req.body;
     const newActivity = await Activity.create({
       topic,
+      title,
       content,
       validityDate,
       userId,
@@ -38,13 +39,13 @@ export const deleteActivity = async (req: Request, res: Response) => {
 export const updateActivity = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { topic, content, validityDate, type, image } = req.body;
+    const { topic, content, validityDate, type, image ,title} = req.body;
     const activity = await Activity.findByPk(id);
 
     if (!activity) {
       return res.status(404).json({ message: "No activity found" });
     }
-
+    activity.title = title;
     activity.topic = topic;
     activity.content = content;
     activity.validityDate = validityDate;
@@ -80,4 +81,5 @@ export const getAllActivities = async (req: Request, res: Response) => {
       res.status(500).json({ error: "Error fetching activity by id" });
     }
   };
+
   

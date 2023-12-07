@@ -1,7 +1,7 @@
 // src/services/socketService.ts
 import io from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:3000/api/activities/activity'; 
+const SOCKET_URL = 'http:///192.168.1.17:3000/api/activities/activities/:type'; 
 const socket = io(SOCKET_URL);
 
 const connectSocket = () => {

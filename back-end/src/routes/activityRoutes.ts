@@ -9,9 +9,10 @@ const router = express.Router();
 router.post('/activity', adminOnly, activityController.createActivity);
 router.delete('/activity/:id', adminOnly, activityController.deleteActivity);
 router.put('/activity/:id', adminOnly, activityController.updateActivity);
-router.get('/activities/:id', adminOnly, activityController.getActivityById);
+router.get('/activities/:id',  activityController.getActivityById);
 
 // Tüm kullanıcılar tarafından erişilebilir
 router.get('/activities', activityController.getAllActivities);
+
 
 export default router;

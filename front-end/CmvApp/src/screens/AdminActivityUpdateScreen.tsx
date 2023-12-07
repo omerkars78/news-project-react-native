@@ -29,10 +29,10 @@ const AdminActivityUpdateScreen: React.FC<AdminActivityUpdateScreenProps> = ({ r
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [activityId, setActivityId] = useState<string>('');
 
+
   useEffect(() => {
     const { activityId } = route.params;
     setActivityId(activityId);
-    // Aktiviteyi API'den al ve formu doldur
     fetchActivity(activityId);
   }, [route.params.activityId]);
 
@@ -50,6 +50,9 @@ const AdminActivityUpdateScreen: React.FC<AdminActivityUpdateScreenProps> = ({ r
     } catch (error) {
       Alert.alert("Hata", "Aktivite yüklenirken bir hata oluştu");
     }
+  };
+  const formatDate = (date: Date) => {
+    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
   };
 
   const toggleDatePicker = () => {
@@ -95,7 +98,7 @@ const AdminActivityUpdateScreen: React.FC<AdminActivityUpdateScreenProps> = ({ r
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Activity Form</Text>
+      <Text style={styles.title}>Activity Update Form</Text>
       <TextInput
         style={styles.input}
         placeholder="Başlık"
@@ -116,6 +119,7 @@ const AdminActivityUpdateScreen: React.FC<AdminActivityUpdateScreenProps> = ({ r
       />
       <RNPickerSelect
         onValueChange={(value) => setType(value === 1)}
+        value={type ? 1 : 0} // RNPickerSelect'in seçili değerini ayarla
         items={[
           { label: 'Haber', value: 1 },
           { label: 'Duyuru', value: 0 },
@@ -130,7 +134,10 @@ const AdminActivityUpdateScreen: React.FC<AdminActivityUpdateScreenProps> = ({ r
         </View>
       )}
 
-      <Button title="Geçerlilik Tarihi Seç" onPress={toggleDatePicker} />
+<Button title="Geçerlilik Tarihi Seç" onPress={toggleDatePicker} />
+      <Text style={styles.selectedDateText}>
+        {formatDate(validityDate)} {/* Seçilen tarihi göster */}
+      </Text>
       {showDatePicker && (
         <DateTimePicker
           value={validityDate || new Date()}
@@ -167,6 +174,11 @@ const styles = StyleSheet.create({
   imagePreviewContainer: {
     alignItems: 'center',
     marginVertical: 8,
+  },
+  selectedDateText: {
+    textAlign: 'center',
+    fontSize: 16,
+    marginTop: 2,
   },
   imagePreview: {
     width: 200,

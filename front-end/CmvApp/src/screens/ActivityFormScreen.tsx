@@ -10,6 +10,7 @@ interface ActivityFormScreenProps {
 }
 
 interface ActivityData {
+  userId: number;
   title: string;
   content: string;
   topic: string;
@@ -19,6 +20,7 @@ interface ActivityData {
 }
 
 const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) => {
+  const [userId, setUserId] = useState<number>(1);
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [topic, setTopic] = useState<string>('');
@@ -49,6 +51,7 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
 
   const handleSubmit = async () => {
     const activityData: ActivityData = {
+      userId,
       title,
       content,
       topic,
@@ -64,7 +67,7 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
       navigation.navigate('AdminActivities');
       console.log(activityData);
     } catch (error) {
-      
+
       Alert.alert("Hata", "Aktivite kaydedilemedi");
     }
   };
@@ -91,15 +94,15 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
         onChangeText={setContent}
       />
       <RNPickerSelect
-        onValueChange={(value) => setType(value === 1)}
+        onValueChange={(value) => setType(value)}
         items={[
-          { label: 'Haber', value: 1 },
-          { label: 'Duyuru', value: 0 },
+          { label: 'Haber', value: true },
+          { label: 'Duyuru', value: false },
         ]}
         style={pickerSelectStyles}
         placeholder={{ label: "Etkinlik Tipi Seçiniz...", value: null }}
       />
-<Button title="Resim Seç" onPress={selectImage} />
+      <Button title="Resim Seç" onPress={selectImage} />
       {image && (
         <View style={styles.imagePreviewContainer}>
           <Image source={{ uri: image }} style={styles.imagePreview} />
@@ -108,12 +111,14 @@ const ActivityFormScreen: React.FC<ActivityFormScreenProps> = ({ navigation }) =
 
       <Button title="Geçerlilik Tarihi Seç" onPress={toggleDatePicker} />
       {showDatePicker && (
-        <DateTimePicker
-          value={validityDate || new Date()}
-          mode="date"
-          display="default"
-          onChange={handleDateChange}
-        />
+        <View style={styles.dateTimePickerContainer}>
+          <DateTimePicker
+            value={validityDate || new Date()}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
+        </View>
       )}
 
       <Button title="Kaydet" onPress={handleSubmit} />
@@ -134,6 +139,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  dateTimePickerContainer: {
+    alignItems: 'center',
+  },
   input: {
     padding: 10,
     marginVertical: 8,
@@ -145,8 +153,8 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   imagePreview: {
-    width: 200,
-    height: 200,
+    width: 100,
+    height: 100,
     borderRadius: 10,
   },
   datePicker: {
